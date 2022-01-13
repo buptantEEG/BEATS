@@ -1,0 +1,55 @@
+Altium Designer Pick and Place Locations
+D:\¿ÆÑÐ\beats\beat_gitee\BEATS_HARDWARE\electronic\MotherBoard_Project\Project Outputs for brain\Pick Place for MotherBoard2(1).txt
+
+========================================================================================================================
+File Design Information:
+
+Date:       05/12/21
+Time:       20:29
+Revision:   36
+Variant:    No variations
+Units used: mil
+
+Designator Comment         Layer       Footprint          Center-X(mil) Center-Y(mil) Rotation Description                                                        
+L1         Inductor        TopLayer    6-0805_M           3783.130mil   2857.500mil   360      Inductor                                                           
+L2         Inductor        BottomLayer 6-0805_M           3823.600mil   3224.800mil   180      Inductor                                                           
+U1         TPS60403QDBVRQ1 BottomLayer DBV5               3637.400mil   3037.998mil   180      ""                                                                 
+OSC1       FXO-HC735-2.048 BottomLayer FXO-HC736R-40      2994.100mil   2908.400mil   180      "Crystal or Oscillator"                                            
+U2         TPS73225DBVRG4  BottomLayer SOT23-5            3374.693mil   3074.800mil   180      ""                                                                 
+P2         "Header 10X2"   TopLayer    61002021121        2485.000mil   3145.013mil   270      "Header, 10-Pin, Dual row"                                         
+P1         61002021121     TopLayer    61002021121        4205.001mil   3145.013mil   270      "SMT Vertical Pin Header WR-PHD, Pitch 2.54 mm, Dual Row, 20 pins" 
+U3         TPS72325DBVR    TopLayer    DBV0005A           3784.400mil   3371.600mil   90       ""                                                                 
+R5         Res1            BottomLayer 1608[0603]         3194.100mil   3168.641mil   270      Resistor                                                           
+R4         Res1            BottomLayer 1608[0603]         2993.100mil   3264.600mil   180      Resistor                                                           
+R3         Res1            BottomLayer 1608[0603]         3262.900mil   3165.800mil   270      Resistor                                                           
+R2         Res1            TopLayer    1608[0603]         2740.600mil   3164.059mil   270      Resistor                                                           
+R1         Res1            TopLayer    1608[0603]         2739.300mil   3056.500mil   90       Resistor                                                           
+P3         MHDR2X20        BottomLayer HDR2.54-M-LS-2x20P 3327.600mil   2406.195mil   180      "Header, 20-Pin, Dual row"                                         
+L4         Inductor        TopLayer    6-0805_M           3848.700mil   3568.500mil   90       Inductor                                                           
+L3         Inductor        BottomLayer 6-0805_M           3375.000mil   3264.600mil   360      Inductor                                                           
+JP6        Jumper          TopLayer    HDR1X3             3289.600mil   3430.500mil   360      "Header, 3-Pin"                                                    
+JP5        Jumper          TopLayer    HDR1X3             3941.200mil   2956.600mil   270      "Header, 3-Pin"                                                    
+JP4        "Header 2"      TopLayer    HDR1X2             3772.600mil   2698.900mil   90       "Header, 2-Pin"                                                    
+JP3        "Header 2"      TopLayer    HDR1X2             3486.700mil   2700.100mil   270      "Header, 2-Pin"                                                    
+JP2        "Header 2"      TopLayer    HDR1X2             2753.800mil   2894.100mil   270      "Header, 2-Pin"                                                    
+JP1        "Header 2"      TopLayer    HDR1X2             3247.900mil   2893.700mil   270      "Header, 2-Pin"                                                    
+C20        Cap             TopLayer    1608[0603]         3920.259mil   3418.844mil   180      Capacitor                                                          
+C19        Cap             TopLayer    6-0805_N           3711.600mil   3518.300mil   360      Capacitor                                                          
+C18        Cap             TopLayer    1608[0603]         3653.400mil   3353.459mil   90       Capacitor                                                          
+C17        Cap             TopLayer    6-0805_N           3711.565mil   3609.200mil   360      Capacitor                                                          
+C16        Cap             TopLayer    1608[0603]         3681.700mil   3266.100mil   360      Capacitor                                                          
+C15        Cap             BottomLayer 1608[0603]         4098.702mil   2795.013mil   270      Capacitor                                                          
+C14        Cap             BottomLayer 6-0805_N           3224.867mil   3265.000mil   360      Capacitor                                                          
+C13        Cap             BottomLayer 1608[0603]         3362.800mil   3171.700mil   180      Capacitor                                                          
+C12        Cap             BottomLayer 6-0805_N           3495.800mil   3204.300mil   90       Capacitor                                                          
+C11        Cap             BottomLayer 1608[0603]         3481.843mil   3064.957mil   270      Capacitor                                                          
+C10        Cap             TopLayer    6-0805_N           3936.633mil   3324.800mil   180      Capacitor                                                          
+C9         Cap             BottomLayer 1608[0603]         3796.500mil   3049.900mil   90       Capacitor                                                          
+C8         Cap             BottomLayer 1608[0603]         3795.900mil   2947.659mil   270      Capacitor                                                          
+C7         Cap             BottomLayer 6-0805_N           3617.200mil   2856.600mil   360      Capacitor                                                          
+C6         Cap             BottomLayer 1608[0603]         3611.800mil   3167.800mil   360      Capacitor                                                          
+C5         Cap             BottomLayer 1608[0603]         3646.200mil   2692.100mil   90       Capacitor                                                          
+C4         Cap             BottomLayer 1608[0603]         3901.800mil   2694.141mil   270      Capacitor                                                          
+C3         Cap             TopLayer    14-1210            3901.800mil   2695.200mil   270      Capacitor                                                          
+C2         Cap             TopLayer    14-1210            3643.700mil   2695.250mil   90       Capacitor                                                          
+C1         Cap             BottomLayer 1608[0603]         2992.600mil   3068.800mil   360      Capacitor                                                          

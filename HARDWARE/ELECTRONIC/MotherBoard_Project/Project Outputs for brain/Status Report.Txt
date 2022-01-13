@@ -1,0 +1,11 @@
+Output: Generates pick and place files
+Type  : Pick Place
+From  : Variant [[No Variations]] of Project [brain.PrjPcb]
+   Generated File[Pick Place for MotherBoard2(1).txt]
+   Generated File[Pick Place for MotherBoard2(1).csv]
+
+
+Files Generated   : 2
+Documents Printed : 0
+
+Finished Output Generation At 20:29:21 On 2021/12/5

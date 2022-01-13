@@ -1,0 +1,5 @@
+Record=TopLevelDocument|FileName=ADCBoard.SchDoc
+Record=SheetSymbol|SourceDocument=ADCBoard.SchDoc|Designator=ads1299|SchDesignator=ads1299|FileName=8Channel_Base.SchDoc|SymbolType=Normal|RawFileName=8Channel_Base.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ADCBoard.SchDoc|Designator=ANA-interface|SchDesignator=ANA-interface|FileName=AnalogInterface2.SchDoc|SymbolType=Normal|RawFileName=AnalogInterface2.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ADCBoard.SchDoc|Designator=DIG-interface|SchDesignator=DIG-interface|FileName=DigitalInterface2.SchDoc|SymbolType=Normal|RawFileName=DigitalInterface2.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=ADCBoard.SchDoc|Designator=electrodes|SchDesignator=electrodes|FileName=elec.SchDoc|SymbolType=Normal|RawFileName=elec.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
