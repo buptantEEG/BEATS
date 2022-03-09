@@ -2,7 +2,7 @@ import ctypes
 import inspect
 
 
-# 强制关闭线程的方法
+# force to stop thread
 def _async_raise(tid, exc_type):
     tid = ctypes.c_long(tid)
     if not inspect.isclass(exc_type):

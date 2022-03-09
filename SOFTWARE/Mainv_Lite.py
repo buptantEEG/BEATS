@@ -20,8 +20,8 @@ import stop_thread
 from Detection_system_Lite import Ui_MainWindow
 import socket
 
-DATA_LIST_TEMP_CH = [[] for i in range(8)]  # 数据池
-DATA_QUEUE_TEMP_CH = queue.Queue()  # 数据池
+DATA_LIST_TEMP_CH = [[] for i in range(8)]  # data pool
+DATA_QUEUE_TEMP_CH = queue.Queue()  # Queues for data storage
 
 
 class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -33,21 +33,21 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         super(detection_window_1, self).__init__()
-        self.channel_num = 8  # 通道数
+        self.channel_num = 8  # quantity of channels
         if self.channel_num > 8:
-            DATA_LIST_TEMP_CH.extend([] for i in range(self.channel_num - 8))  # 数据池
+            DATA_LIST_TEMP_CH.extend([] for i in range(self.channel_num - 8))  #update data pool
 
         self.time_temp = 0
-        self.fresh_interval = 10  # clock刷新时间（ms）
+        self.fresh_interval = 10  # clock refresh time (ms)
         self.pdata = 0
         self.temp_len_data = 0
         self.temp_ll = 0
-        self.sample_rate = 250  # 采样率
+        self.sample_rate = 250  # sampling rates
         self.package_length = 50
         self.plot_time = 5
-        self.plot_length = self.sample_rate * self.plot_time  # 显示长度
+        self.plot_length = self.sample_rate * self.plot_time  # data length to show
         self.save_pkg_length = self.sample_rate / self.package_length * 5
-        self.offset = -0.001  # 各通道距离
+        self.offset = -0.001  # curve distance
         # self.offset_list=[[j*self.offset for i in range(self.package_length)]for j in range(self.channel_num)]
         # print(len(self.offset_list[0]))
         self.offset_list = [self.offset * i for i in range(self.channel_num)]
@@ -55,7 +55,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
         self.is_detrend = True
         self.is_save_data = True
 
-        # 设置坐标为str
+        # set coordinate
         self.x_list = [0.5 * self.sample_rate * i for i in range(2 * self.plot_time + 1)]
         self.x_labels = [str(0.5 * i) for i in range(2 * self.plot_time + 1)]
         self.y_list = [self.offset * i for i in range(self.channel_num)]
@@ -70,40 +70,40 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ystrAxes = pg.AxisItem(orientation='left')
         self.ystrAxes.setTicks([self.yticks])
 
-        # 刺激参数初始化
+        # initial stimulation parameters
         self.start_time = 0
         self.sti_times = []
         self.sti_event = []
         self.sti_point = []
-        # 初始化UI
+        # initial UI
         # pg.setConfigOption('background', 'w')
         # pg.setConfigOption('foreground', 'r')
         self.setupUi(self)
 
-        # 信号刷新器
+        # timers for EEG signal updating
         self.timer_EEG = QTimer()
         self.timer_EEG.timeout.connect(self.update)
 
         self.pushButton.setEnabled(True)
         self.pushButton_2.setEnabled(False)
 
-        # 滤波器
+        # filters
         # self.b, self.a = signal.butter(5, [2 * 1 / self.sample_rate, 2 * 50 / self.sample_rate], 'bandpass')
         self.b, self.a = signal.butter(5, 2 * 30 / self.sample_rate, 'lowpass')
 
-        # 用于滤波的前缀overlap
+        # front overlap 
         self.overlap_begin = [[] for i in range(self.channel_num)]
         self.overlap_end = [[] for i in range(self.channel_num)]
         self.before_data = [[] for i in range(self.channel_num)]
         self.savecount = 0
         self.save_data_queue = queue.Queue()
-        # 初始各通道显示的一条直线
+        
         self.data = [[] for i in range(self.channel_num)]
         self.curves = []
         for i in range(self.channel_num):
             self.data[i] = [i * self.offset] * self.plot_length
 
-        # 设置绘图参数
+        # initial drawing parameters
         self.graphicsView.setDownsampling(mode='subsample')
         self.graphicsView.setRange(
             yRange=[(self.offset * (self.channel_num - 1)) + 0.2 * self.offset, -0.2 * self.offset])
@@ -115,7 +115,8 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pens = [(255, 0, 0), (255, 130, 71), (255, 215, 0), (0, 255, 0), (0, 0, 255), (0, 255, 255),
                      (160, 32, 240),(255,255,255)]
-        # 生成各通道curve
+
+        # initial curves for each channel
         for i in range(self.channel_num):
             self.curves.append(self.graphicsView.plot(
                 pen=mkPen(width=2,color=self.pens[i]),  # 画笔颜色
@@ -125,10 +126,8 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
         for i in range(self.channel_num):
             self.curves[i].setData(self.data[i])
 
-        # TCP/IP参数
+        # TCP/IP parameters
 
-
-        # 获取计算机名称
         hostname = socket.gethostname()
         self.client_ip = socket.gethostbyname(hostname)
         self.serverIP = '0.0.0.0'
@@ -136,26 +135,26 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
         self.server_addr = (self.serverIP, self.serverPort)
         self.sockServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.BUFFER_SIZE = 8 * 1024
-        # TCP/IP初始化
+        # initial TCP/IP
         self.tcp_server_init()
 
-        # 绑定click响应
+        # bind click events
         self.click_events()
 
-        # 初始化线程参数
+        # initial thread parameter
         self.EEG_is_running = True
 
-        # 用于暂停的进程
+        # thread for suspend
         self.stopEvent = threading.Event()
         self.stopEvent.clear()
 
-        # 用于结束的进程
+        # thread for ending
         self.stopEvent_EEG = threading.Event()
         self.stopEvent_EEG.clear()
 
     def click_eeg_start_button(self):
         """
-        开启信号接受、接收到信号后进行绘制
+        Turn on signal acceptance and draw after receiving the signal
         """
         print(self.client_ip)
         self.pushButton.setEnabled(False)
@@ -169,7 +168,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.timer_EEG = QTimer()
         self.timer_EEG.timeout.connect(self.update_curves)
-        self.timer_EEG.start(self.fresh_interval)  # 设置计时间隔并启动
+        self.timer_EEG.start(self.fresh_interval)  
 
         if self.is_save_data:
             self.save_thread = threading.Thread(target=self.save_data, args=())
@@ -177,8 +176,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def click_eeg_stop_button(self):
         """
-        停止数据的接收和显示
-        :return:
+        Stop data reception and display
         """
         self.pushButton.setEnabled(True)
         self.pushButton_2.setEnabled(False)
@@ -204,7 +202,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
         print(self.sti_event)
 
     def click_eeg_localtest_button(self):
-        path = 'E:/实验数据/1024中午/Data/'
+        path = ''
         files = os.listdir(path)
         files.sort(key=lambda x: int(x[4:-4]))
         print(files)
@@ -230,7 +228,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def click_events(self):
         """
-        绑定click响应
+        bind click events with buttons
         :return:
         """
         self.pushButton.clicked.connect(self.click_eeg_start_button)
@@ -241,7 +239,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def stopEEGEventHandle(self):
         """
-        暂停程序
+        suspend 
         :return:
         """
         if not self.EEG_is_running:
@@ -260,10 +258,8 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
             # data = DATA_QUEUE_TEMP_CH.get()
             ll = len(DATA_LIST_TEMP_CH[0])
             # print("ll",ll,"temp_len",self.temp_len_data)
-            # 没有新数据不进入if
-            if ll > self.temp_ll:  # todo 改成没有新数据
-                # 数据没有达到一张图的显示范围
-                if ll <= self.plot_length:
+            if ll > self.temp_ll:  # check if new data or not
+                if ll <= self.plot_length: 
                     if self.is_detrend:
                         for i in range(self.channel_num):
                             self.data[i] = list(np.array(detrend(DATA_LIST_TEMP_CH[i])) + self.offset_list[i])
@@ -290,7 +286,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.temp_ll = ll
                 # print(self.pdata)
 
-                # 定期消除数据
+                # clear data
                 if self.pdata >= 2 * self.plot_length:
                     # print("p_data",self.pdata,"plot_length",self.plot_length)
                     # print("clear")
@@ -300,20 +296,20 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
                     # print("time:", time.time() - self.time_temp)
                     # self.time_temp = time.time()
 
-                    # 数据填充到绘制曲线中
+                # update curve
                 for i in range(self.channel_num):
                     self.curves[i].setData(self.data[i])
                     self.data[i] = []
 
-                # 重新设定 x 相关的坐标原点
+                # reset x origin 
                 # for i in range(self.channel_num):
                 #     self.curves[i].setPos(self.pdata, 0)
             self.temp_len_data = ll
 
     def clear_timer(self, pt):
         """
-        用于数据保存和内存清理
-        :param pt:指针，指向需要保存的数据的下一个数据
+        For data saving and memory cleaning
+        :param pt: Pointer to the next data of the data that needs to be saved
         """
         for i in range(self.channel_num):
             DATA_LIST_TEMP_CH[i] = DATA_LIST_TEMP_CH[i][pt:]
@@ -327,7 +323,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
                 datapool = self.save_data_queue.get()
                 if (datapool == 'end'):
                     # print('save_pkg_length ', save_pkg_length)
-                    # 如果最后一次不满save——pkg——length，不会被存储下来,在这手动存储
+                    # if not longer than save_pkg_length，the data is not saved automatically and save it here
                     sio.savemat('./Data/data' + str(int(counter / self.save_pkg_length) + 1) + '.mat',
                                 mdict={'data': all_data, 'status': all_status, 'time_stamp': start_time_stamp})
                     all_data = []
@@ -381,7 +377,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def thread_tcp_server(self):
         """
-        todo:将数据延迟一个包进行显示，在overlap的时候就可以使用后面一端数据 /已完成
+        thread for tcp server
         :return:
         """
         try:
@@ -400,10 +396,14 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
                 break
             data_length = struct.unpack('i', receive_length)[0]
             # print(data_length)
-
             # dataRecv = (clientSock.recv(data_length)).decode('utf-8')
-            # Python的socket一次最多只能读出缓冲区的全部的数据，如果指定的数据包的大小大于缓冲区的大小，则读出的有效数据仅仅为缓冲区的数据。
-            # 如果能确定发送过来的数据大于缓冲区的大小，则需要多次：socket.recv(receiverBufsize)，然后将收到的数据拼接成完整的数据包后再解析。
+
+            # Python socket can only read all the data of the buffer at most at one time.
+            # If the size of the specified data packet is larger than the size of the buffer, 
+            # the valid data read is only the data of the buffer.
+            # If it can be determined that the data sent is larger than the size of the buffer, multiple times are required:
+            # socket.recv(receiverBufsize)
+            # and then the received data is spliced into a complete data packet and then parsed.
             receive_data = []
             while data_length > 0:
                 if data_length > self.BUFFER_SIZE:
@@ -413,7 +413,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
                 receive_data.append(temp)
                 data_length = data_length - len(temp)
             receive_data = b''.join(receive_data).decode('utf-8')
-            # https://www.cnblogs.com/luckgopher/p/4816919.html
+            # reference: https://www.cnblogs.com/luckgopher/p/4816919.html
             temp_data = json.loads(receive_data)
             # display_queue.put(data)
 
@@ -435,7 +435,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
                 # print("data:",len(listdata[1]))
                 # print(len(listdata[1]))
                 if listdata[1][self.package_length:-self.package_length]:
-                    filtedData = signal.filtfilt(self.b, self.a, listdata)  # data为要过滤的信号
+                    filtedData = signal.filtfilt(self.b, self.a, listdata)  
                     # print("filtdata:",len(filtedData[1]))
                     filtedData = [i[self.package_length:-self.package_length] for i in filtedData]
                     # print("no_overlap_data:",len(filtedData[1]))
@@ -465,27 +465,22 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def tcp_close(self):
         """
-        功能函数，关闭网络连接的方法
+        Function to close the network connection
         """
         if self.sockServer:
             self.sockServer.close()
 
     def closeEvent(self, event):
-        # 创建一个消息盒子（提示框）
+        # Create a message box (prompt box)
         quitMsgBox = QMessageBox()
-        # 设置提示框的标题
-        quitMsgBox.setWindowTitle('确认提示')
-        # 设置提示框的内容
-        quitMsgBox.setText('你确认退出吗？')
-        # 设置按钮标准，一个yes一个no
+        quitMsgBox.setWindowTitle('warn')
+        quitMsgBox.setText('Sure to quit?')
         quitMsgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        # 获取两个按钮并且修改显示文本
         buttonY = quitMsgBox.button(QMessageBox.Yes)
-        buttonY.setText('确定')
+        buttonY.setText('yes')
         buttonN = quitMsgBox.button(QMessageBox.No)
-        buttonN.setText('取消')
+        buttonN.setText('no')
         quitMsgBox.exec_()
-        # 判断返回值，如果点击的是Yes按钮，我们就关闭组件和应用，否则就忽略关闭事件
         if quitMsgBox.clickedButton() == buttonY:
             self.stopEEGEventHandle()
             try:
