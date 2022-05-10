@@ -1,5 +1,5 @@
 # BEATS
-*B*eijing University of Posts and Telecommunications *E*EG *A*cquisition *T*ool *S*ystem
+**B**eijing University of Posts and Telecommunications **E**EG **A**cquisition **T**ool **S**ystem
 
 ## Introduction
 
@@ -17,3 +17,4 @@ BEATS_firmware includes programs for chips controlling and data transfering.
 ## Hardware usage
 
 ## Firmware usage
+
