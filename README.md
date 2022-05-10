@@ -1,4 +1,5 @@
 # BEATS
+*B*eijing University of Posts and Telecommunications *E*EG *A*cquisition *T*ool *S*ystem
 
 ## Introduction
 
