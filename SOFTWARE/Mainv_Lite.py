@@ -20,7 +20,7 @@ import stop_thread
 from Detection_system_Lite import Ui_MainWindow
 import socket
 
-DATA_LIST_TEMP_CH = [[] for i in range(8)]  # data pool
+DATA_LIST_TEMP_CH = [[]]  # data pool
 DATA_QUEUE_TEMP_CH = queue.Queue()  # Queues for data storage
 
 
@@ -34,26 +34,25 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(detection_window_1, self).__init__()
         self.channel_num = 8  # quantity of channels
-        if self.channel_num > 8:
-            DATA_LIST_TEMP_CH.extend([] for i in range(self.channel_num - 8))  #update data pool
-
+        if self.channel_num > 1:
+            DATA_LIST_TEMP_CH.extend([] for i in range(self.channel_num - 1))  #update data pool
         self.time_temp = 0
         self.fresh_interval = 10  # clock refresh time (ms)
         self.pdata = 0
         self.temp_len_data = 0
         self.temp_ll = 0
         self.sample_rate = 250  # sampling rates
-        self.package_length = 50
-        self.plot_time = 5
+        self.package_length = 100
+        self.plot_time = 4
         self.plot_length = self.sample_rate * self.plot_time  # data length to show
         self.save_pkg_length = self.sample_rate / self.package_length * 5
-        self.offset = -0.001  # curve distance
+        self.offset = -0.01  # curve distance
         # self.offset_list=[[j*self.offset for i in range(self.package_length)]for j in range(self.channel_num)]
         # print(len(self.offset_list[0]))
         self.offset_list = [self.offset * i for i in range(self.channel_num)]
-        self.is_filt = True
-        self.is_detrend = True
-        self.is_save_data = True
+        self.is_filt = False
+        self.is_detrend = False
+        self.is_save_data = False
 
         # set coordinate
         self.x_list = [0.5 * self.sample_rate * i for i in range(2 * self.plot_time + 1)]
@@ -91,13 +90,13 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.b, self.a = signal.butter(5, [2 * 1 / self.sample_rate, 2 * 50 / self.sample_rate], 'bandpass')
         self.b, self.a = signal.butter(5, 2 * 30 / self.sample_rate, 'lowpass')
 
-        # front overlap 
+        # front overlap
         self.overlap_begin = [[] for i in range(self.channel_num)]
         self.overlap_end = [[] for i in range(self.channel_num)]
         self.before_data = [[] for i in range(self.channel_num)]
         self.savecount = 0
         self.save_data_queue = queue.Queue()
-        
+
         self.data = [[] for i in range(self.channel_num)]
         self.curves = []
         for i in range(self.channel_num):
@@ -168,7 +167,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.timer_EEG = QTimer()
         self.timer_EEG.timeout.connect(self.update_curves)
-        self.timer_EEG.start(self.fresh_interval)  
+        self.timer_EEG.start(self.fresh_interval)
 
         if self.is_save_data:
             self.save_thread = threading.Thread(target=self.save_data, args=())
@@ -235,11 +234,13 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButton_2.clicked.connect(self.click_eeg_stop_button)
         self.pushButton_3.clicked.connect(self.click_eeg_STI_button)
         self.pushButton_4.clicked.connect(self.click_eeg_undo_button)
+
+        self.verticalSlider.valueChanged.connect(self.change_scale)
         # self.pushButton_5.clicked.connect(self.click_eeg_localtest_button)
 
     def stopEEGEventHandle(self):
         """
-        suspend 
+        suspend
         :return:
         """
         if not self.EEG_is_running:
@@ -259,7 +260,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
             ll = len(DATA_LIST_TEMP_CH[0])
             # print("ll",ll,"temp_len",self.temp_len_data)
             if ll > self.temp_ll:  # check if new data or not
-                if ll <= self.plot_length: 
+                if ll <= self.plot_length:
                     if self.is_detrend:
                         for i in range(self.channel_num):
                             self.data[i] = list(np.array(detrend(DATA_LIST_TEMP_CH[i])) + self.offset_list[i])
@@ -301,10 +302,32 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.curves[i].setData(self.data[i])
                     self.data[i] = []
 
-                # reset x origin 
+                # reset x origin
                 # for i in range(self.channel_num):
                 #     self.curves[i].setPos(self.pdata, 0)
             self.temp_len_data = ll
+
+    def change_scale(self):
+        print(int(self.verticalSlider.value()))
+        self.offset = -0.01/int(self.verticalSlider.value())  # curve distance
+        # print(self.offset)
+        # self.offset_list=[[j*self.offset for i in range(self.package_length)]for j in range(self.channel_num)]
+        # print(len(self.offset_list[0]))
+        self.offset_list = [self.offset * i for i in range(self.channel_num)]
+        # set coordinate
+        # set coordinate
+        self.y_list = [self.offset * i for i in range(self.channel_num)]
+
+        self.yticks = [(i, j) for i, j in zip(self.y_list, self.y_labels)]
+
+        self.ystrAxes.setTicks([self.yticks])
+
+        self.graphicsView.setRange(
+            yRange=[(self.offset * (self.channel_num - 1)) + 0.2 * self.offset, -0.2 * self.offset])
+
+        self.graphicsView.setAxisItems(axisItems={'bottom': self.xstrAxes, 'left': self.ystrAxes})
+
+        self.update_curves()
 
     def clear_timer(self, pt):
         """
@@ -399,7 +422,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
             # dataRecv = (clientSock.recv(data_length)).decode('utf-8')
 
             # Python socket can only read all the data of the buffer at most at one time.
-            # If the size of the specified data packet is larger than the size of the buffer, 
+            # If the size of the specified data packet is larger than the size of the buffer,
             # the valid data read is only the data of the buffer.
             # If it can be determined that the data sent is larger than the size of the buffer, multiple times are required:
             # socket.recv(receiverBufsize)
@@ -435,7 +458,7 @@ class detection_window_1(QtWidgets.QMainWindow, Ui_MainWindow):
                 # print("data:",len(listdata[1]))
                 # print(len(listdata[1]))
                 if listdata[1][self.package_length:-self.package_length]:
-                    filtedData = signal.filtfilt(self.b, self.a, listdata)  
+                    filtedData = signal.filtfilt(self.b, self.a, listdata)
                     # print("filtdata:",len(filtedData[1]))
                     filtedData = [i[self.package_length:-self.package_length] for i in filtedData]
                     # print("no_overlap_data:",len(filtedData[1]))
