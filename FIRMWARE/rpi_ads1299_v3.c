@@ -82,7 +82,7 @@ void map_devices(void);
 
 // -------- FIFO -------- //
 // File descriptor for FIFO
-int fifo_fd=0;
+int fifo_fd = 0;
 uint32_t fifo_size;
 
 int create_fifo(char *fname);
@@ -178,7 +178,7 @@ struct timeval start, end;
 #define TEST_SIGNAL 5
 
 // Command-line variables
-int mux = TEST_SIGNAL, sample_rate=4000, chip_num=1, detect_enable=0;
+int mux = TEST_SIGNAL, sample_rate = 4000, chip_num = 1, detect_enable = 0;
 uint32_t total_samples, target_samples;
 char *fifo_name;
 
@@ -197,18 +197,18 @@ int main(int argc, char *argv[])
             switch (toupper(argv[args][1]))
             {
             case 'N':                   // -N: number of total samples
-                if (args>=argc-1 || !isdigit((int)argv[args+1][0]) ||
+                if (args >= argc-1 || !isdigit((int)argv[args+1][0]) ||
                     (target_samples = atoi(argv[++args])) < 1)
                     fprintf(stderr, "Error: no target samples\n");
                 break;
             case 'P':                   // -P:  pipe name, stream into named pipe (FIFO)
-                if (args>=argc-1 || !argv[args+1][0])
+                if (args >= argc-1 || !argv[args+1][0])
                     fprintf(stderr, "Error: no FIFO name\n");
                 else
                     fifo_name = argv[++args];
                 break;
             case 'R':                   // -R: sample rate (samples/sec)
-                if (args>=argc-1 || !isdigit((int)argv[args+1][0]))
+                if (args >= argc-1 || !isdigit((int)argv[args+1][0]))
                     fprintf(stderr, "Error: no sample rate\n");
                 else
                 {
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
                 printf("sample_rate:%d\n", sample_rate);
                 break;
             case 'C': // -C:number of chips
-                if (args>=argc-1 || !isdigit((int)argv[args+1][0]))
+                if (args >= argc-1 || !isdigit((int)argv[args+1][0]))
                     fprintf(stderr, "Error: no number of chips\n");
                 else
                 {
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
                 printf("number of chips:%d\n", chip_num);
                 break;
             case 'M':                 // -M:Input Multiplexer
-                if (args>=argc-1 || !isdigit((int)argv[args+1][0]))
+                if (args >= argc-1 || !isdigit((int)argv[args+1][0]))
                     fprintf(stderr, "Error: no Input Multiplexer\n");
                 else
                 {
