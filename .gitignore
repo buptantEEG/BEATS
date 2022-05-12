@@ -7,3 +7,5 @@
 .idea/vcs.xml
 SOFTWARE/__pycache__/Detection_system_Lite.cpython-38.pyc
 SOFTWARE/__pycache__/stop_thread.cpython-38.pyc
+__pycache__
+.idea
