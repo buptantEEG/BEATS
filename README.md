@@ -15,9 +15,11 @@ BEATS_software includes codes of visiualization, saving and preprocessing tools.
 
 BEATS_firmware includes programs for chips controlling and data transfering.
 
-## Software usage
 
-## Hardware usage
 
-## Firmware usage
+## Analog Front End
+Altium Designer
 
+## Microprocessor
+
+## Software Platform
