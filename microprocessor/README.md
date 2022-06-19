@@ -1,6 +1,6 @@
 # Microprocessor
 
-Programs in Raspberry Pi 4B
+Embedded software in Raspberry Pi 4B
 
 ### Compile
 
