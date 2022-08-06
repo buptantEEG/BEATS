@@ -717,7 +717,6 @@ void change_mux(int mux)
             break;
     }
     
-    // 逐个通道写入
     write_reg(0x05, 0x60|write_bits);
     write_reg(0x06, 0x60|write_bits);
     write_reg(0x07, 0x60|write_bits);
