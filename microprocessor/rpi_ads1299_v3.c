@@ -1,5 +1,5 @@
 /*
-编译：
+compile:
 gcc -o rpi_ads1299_v3 rpi_ads1299_v3.c rpi_dma_utils.c -Wall -lwiringPi
 */
 
@@ -25,8 +25,6 @@ gcc -o rpi_ads1299_v3 rpi_ads1299_v3.c rpi_dma_utils.c -Wall -lwiringPi
 #define MIN_SPI_FREQ    10000
 #define MAX_SPI_FREQ    20000000
 #define SPI_FREQ        4000000
-// FIXME(LeBoi):SCLK频率不能照预设值进行设置，设置为10M实际会变为25M的频率，此时数据错误
-// 设置为8M会变为10M的时钟频率，并且时钟不是很整齐，但此时数据正常。
 
 #define SPI0_CE_NUM     0
 // SPI 0 pin definitions
@@ -52,7 +50,7 @@ gcc -o rpi_ads1299_v3 rpi_ads1299_v3.c rpi_dma_utils.c -Wall -lwiringPi
 #define SPI_RXD         (1 << 17)
 #define SPI_CE0         0
 #define SPI_CE1         1
-#define SPI_CSVAL       (1 << 2)       // Additional CS register settings ， SPI模式0b01
+#define SPI_CSVAL       (1 << 2)       // Additional CS register settings, SPI mode 0b01
 
 // SPI register strings
 char *spi_regstrs[] = {"CS", "FIFO", "CLK", "DLEN", "LTOH", "DC", ""};
@@ -67,7 +65,7 @@ void disp_spi(void);
 // -------- --------//
 
 // Non-cached memory size
-// #define MAX_SAMPS       40//00//*10 //目前用于想要收的样本数，可调
+// #define MAX_SAMPS       40//00//*10 // Currently used for the number of samples you want to receive, adjustable
 
 // #define BUFF_LEN        (MAX_SAMPS * SAMP_SIZE)
 // #define MAX_BUFFS       2
@@ -126,30 +124,27 @@ void change_mux(int mux);
 
 
 // --------  -------- // 
-// 用两个数组形成ping-pong buffer
-# define MAX_BUFF_SAMPLES 40 //每个buff存的最大样本数
-#define SAMPLE_SIZE       27 //单片，每个样本的字节数
-uint8_t rx_buff0[MAX_BUFF_SAMPLES*(1+MAX_CHIPS*SAMPLE_SIZE)]; //存储收到的SPI每8bit的数据，1指的是发送RDATA指令时返回的无用的8bit
+// Form ping-pong buffer with two arrays
+#define MAX_BUFF_SAMPLES 40  // Maximum number of samples stored in each buff
+#define SAMPLE_SIZE       27 // single chip, bytes per sample
+uint8_t rx_buff0[MAX_BUFF_SAMPLES*(1+MAX_CHIPS*SAMPLE_SIZE)];
+//Store every 8 bit data of the received SPI, 1 refers to the useless 8bit returned when sending the RDATA command
 uint8_t rx_buff1[MAX_BUFF_SAMPLES*(1+MAX_CHIPS*SAMPLE_SIZE)];
-int which_rx_buff; // 0和1，表示buff0和buff1。-1表示buff不可用
-int rx_buff0_status = 0; //状态，1表示写满了可以读
+int which_rx_buff; // 0 and 1, indicating buff0 and buff1. -1 means the buff is not available
+int rx_buff0_status = 0; // Status, 1 means full and can be read
 int rx_buff1_status = 0; 
-int buff_samples = 0; //当前buff采集到的样本数
+int buff_samples = 0; // The number of samples collected by the current buff
 #define VOLTAGE_BUFFLEN  5000+ MAX_CHIPS*5000
-char voltage_buff[VOLTAGE_BUFFLEN]; //存储转换后的十进制的值，用于输出
+char voltage_buff[VOLTAGE_BUFFLEN]; // Store the converted decimal value for output
 
-int stop_receive_flag = 0; //结束中断检测的flag
-int end_program_flag = 0; //结束整个程序的flag
+int stop_receive_flag = 0; // flag to end interrupt detection
+int end_program_flag = 0; // flag to end the entire program
 
 
-#define VC_MEM_SIZE     (PAGE_SIZE + (MAX_BUFF_SAMPLES * SAMPLE_SIZE)) // 随便
+#define VC_MEM_SIZE     (PAGE_SIZE + (MAX_BUFF_SAMPLES * SAMPLE_SIZE))
 
 // -------- DMA -------- //
-
-void dma_receive_data(); // 用DMA发送SPI指令收取数据
-//计划用下面两个函数替代上面的函数
-// void ads1299_dma_setup(); //DMA设置
-// void ads1299_dma_receive_data(); //DMA启动
+void dma_receive_data(); // Use DMA to send SPI commands to receive data
 
 void dma_wait(int chan); // Wait until DMA is complete
 void ads1299_tx_data(void *buff, int chip_num);
@@ -157,22 +152,22 @@ void ads1299_tx_data(void *buff, int chip_num);
 
 void ISR_function();
 void disp_array(uint8_t *array);
-int format_data(uint8_t *rx_buff); // 将收到的8bit数据合并转化为十进制形式
-void streaming_output(); //持续往FIFO输出
+int format_data(uint8_t *rx_buff); // Combine the received 8bit data into decimal form
+void streaming_output(); // Continuously output to FIFO
 int manage_output_buff();
 
 
-// ------ 时间戳与计时 -------- //
+// ------ Timestamp and Timing -------- //
 # include <sys/time.h>
 struct timeval start, end;
 /*
     struct timeval {
-　　        long tv_sec; // 秒数
-　　        long tv_usec; //微秒数
+　　        long tv_sec; // seconds
+　　        long tv_usec; // microseconds
     }
 */
 
-// -------- 控制台 --------//
+// -------- command line --------//
 #define NORMAL_ELEC_INPUT 0
 #define INPUT_SHORTED 1
 #define TEST_SIGNAL 5
@@ -185,10 +180,7 @@ char *fifo_name;
 
 int main(int argc, char *argv[])
 {
-    
-    // 检测控制台参数,此部分还需要修改测试，有很多特殊输入和边界条件没有考虑
-    // FIXME: 有一个冗余输入的问题，比如输入-N adc.fifo 后还有参数 -N hello，那么文件名会变为hello
-    int args = 0;
+   int args = 0;
     printf("argc:%d\n", argc);
     while (argc > ++args)               // Process command-line args
     {
@@ -287,15 +279,13 @@ int main(int argc, char *argv[])
 
         if (create_fifo(fifo_name))
         {
-            create_fifo(fifo_name); //创建FIFO，不涉及阻塞
+            create_fifo(fifo_name); 
             printf("Created FIFO '%s'\n", fifo_name);
 
             send_command(CMD_START);
 
             while(1)
             {
-                // TODO:写一个streaming函数，持续检测FIFO输出状态。此时数据采集端应该有ping-pong buffer，保证数据不间断采集
-                // 需要调整buffer大小，以保证数据速度能够匹配
                 streaming_output();
 
                 if (end_program_flag==1)
@@ -314,19 +304,13 @@ int main(int argc, char *argv[])
     {
         if (create_fifo(fifo_name))
         {
-            create_fifo(fifo_name); //创建FIFO，不涉及阻塞
+            create_fifo(fifo_name); 
             printf("Created FIFO '%s'\n", fifo_name);
 
             send_command(CMD_START);
-            // TODO：检测到FIFO被读取之后，才开始触发中断检测
-            // TODO：非必要，可以先启动检测，然后马上输出，因为启动检测后采集数据还要一小段时间。
-            // 检测DRDY信号
-            // wiringPiISR(2, INT_EDGE_FALLING, &ISR_function); //是独立一个线程
 
             while(1)
             {
-                // TODO:写一个streaming函数，持续检测FIFO输出状态。此时数据采集端应该有ping-pong buffer，保证数据不间断采集
-                // 需要调整buffer大小，以保证数据速度能够匹配
                 streaming_output();
 
                 if (end_program_flag==1)
@@ -338,7 +322,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    terminate(0); // FIXME:会产生一个段错误
+    terminate(0); 
 }
 
 void ISR_function()
@@ -350,7 +334,7 @@ void ISR_function()
             if(stop_receive_flag != -1)
                 stop_receive_flag = 1;
 
-            // total_samples = total_samples+1; //HACK:为了让下面代码段只会执行一次
+            // total_samples = total_samples+1; 
         }
     }
 
@@ -359,25 +343,25 @@ void ISR_function()
     {
         dma_receive_data();
     }
-    else if(stop_receive_flag==1) // BUG:采到固定点数还没有打开fifo文件，这个else会一直循环
+    else if(stop_receive_flag==1) 
     {
         dma_wait(DMA_CHAN_A);
         printf("step1\n");
-        // send_command(CMD_STOP);  // FIXME: 这一步有问题，下一个print不能执行，也发不出指令，和DMA有关。
+        // send_command(CMD_STOP);  
         printf("step2\n");
-        system("gpio unexport 27"); // FIXME：并不能结束中断响应
-        stop_receive_flag = -1; // HACK: 通过让flag为-1使else只会执行一次
-        end_program_flag = 1; // end_program_flag为1，while循环会执行操作，退出程序
+        system("gpio unexport 27"); 
+        stop_receive_flag = -1; 
+        end_program_flag = 1; 
     }
     
 }
 
-// 持续向FIFO输出
+// Continuous output to FIFO
 void streaming_output()
 {
     int write_len;
 
-    //写入数据
+    // write data
     if (!fifo_fd)
     {
         printf("fifo check point1 \n");
@@ -385,7 +369,7 @@ void streaming_output()
         printf("fifo_fd:%d \n", fifo_fd);
         if (fifo_fd > 0)
         {
-            wiringPiISR(2, INT_EDGE_FALLING, &ISR_function); //是独立一个线程
+            wiringPiISR(2, INT_EDGE_FALLING, &ISR_function); 
             
             printf("Started streaming to FIFO '%s'\n", fifo_name);
             fifo_size = fifo_freespace(fifo_fd);
@@ -429,27 +413,26 @@ int manage_output_buff()
     int len=0;
     if(rx_buff0_status==1)
     {
-        // TODO(LeBoi):这个地方需要修改，因为在读取程序未打开前，一直在采数据，导致第一次打开时，数据一定是满的，一定会overrun一次
-        if(rx_buff1_status==1) //两个buff都满了,
+        if(rx_buff1_status==1) // two buffers are full
         {
             rx_buff0_status=rx_buff1_status=0;
             printf("overrun\n");
             return 0;
         }
-        //格式化数据
+        // formatting data
         len = format_data(rx_buff0);
         rx_buff0_status = 0;
         // ( XXX ? format_data(rx_buff0) : format_data(rx_buff1) );
     }
     else if(rx_buff1_status==1)
     {
-        if(rx_buff0_status==1) //两个buff都满了
+        if(rx_buff0_status==1) // two buffers are full
         {
             rx_buff0_status=rx_buff1_status=0;
             printf("overrun\n");
             return 0;
         }
-        //格式化数据
+        // formatting data
         len = format_data(rx_buff1);
         rx_buff1_status = 0;
     }
@@ -460,25 +443,25 @@ int format_data(uint8_t *rx_buff)
 {
     // printf("format_data check point1 \n");
     int slen = 0;
-    uint32_t c_raw; // 补码形式原数据
-    int32_t raw; // 带符号的原数据
+    uint32_t c_raw; // Raw data in complement form
+    int32_t raw; // signed raw data
     for (int i_samples=0; i_samples<MAX_BUFF_SAMPLES; i_samples++)
     {
         int sample_start_point = (1+27*chip_num)*i_samples;
         for(int j_channels=0; j_channels<9*chip_num; j_channels++)
         {
-            int channel_start_point = sample_start_point + 3*j_channels + 1; //1是最开始的RDATA指令的返回值00
-            // 将8bit拼接成24bit
+            int channel_start_point = sample_start_point + 3*j_channels + 1; 
+            // concatenate
             c_raw = ((uint32_t)rx_buff[channel_start_point]<<16) + ((uint32_t)rx_buff[channel_start_point+1]<<8) + (uint32_t)rx_buff[channel_start_point+2]; //24bit拼接
             if(j_channels==0)
             {
-                // slen += sprintf(&voltage_buff[slen], "%06X" , c_raw ); // 存成六位16进制的数
-                slen += sprintf(&voltage_buff[slen], "%d", c_raw); // 存成十进制数
+                // slen += sprintf(&voltage_buff[slen], "%06X" , c_raw ); // save as 0x
+                slen += sprintf(&voltage_buff[slen], "%d", c_raw); // save as decimal
             }
-            else if(j_channels%9==0) //不等于0，也不被9整除
+            else if(j_channels%9==0) 
             {
                 // slen += sprintf(&voltage_buff[slen], ",%06X" , c_raw );
-                slen += sprintf(&voltage_buff[slen], ",%d", c_raw); // 存成十进制数
+                slen += sprintf(&voltage_buff[slen], ",%d", c_raw); // save as decimal
             }
             else
             {
@@ -503,7 +486,6 @@ int format_data(uint8_t *rx_buff)
 }
 
 // ——————————————————DMA———————————————— //
-// 打算把这个函数拆分开，把DMA设置初始化和DMA调用分开。避免DMA重复设置。
 void dma_receive_data()
 {
     MEM_MAP *mp = &vc_mem;
@@ -539,9 +521,6 @@ void dma_receive_data()
     // if(total_samples == target_samples) finish = clock();
 
     
-    // 两个buff交替工作，不管有没有被取走，都交替工作
-    // TODO：加入buff数据有没有被取走的标识
-    // TODO:下面这段代码重复高，可以简化
     if(which_rx_buff==0)
     {
         memcpy((rx_buff0 + dlen*buff_samples), rxdata, dlen);
@@ -574,7 +553,7 @@ void dma_receive_data()
 // Return Tx data for ADS1299
 void ads1299_tx_data(void *buff, int chip_num)
 {
-    uint8_t txd[1+chip_num*27]; // = {0}; 报错，变量赋值不能同时初始化
+    uint8_t txd[1+chip_num*27]; // = {0};
     memset(txd, 0, sizeof(txd));
     txd[0] = CMD_RDATA;
     memcpy(buff, txd, sizeof(txd));
@@ -607,8 +586,6 @@ void dma_wait(int chan)
 }
 
 // -------- ADS1299 -------- //
-// FIXME:SPI片选信号上升得太快，导致指令来不及解析，通过在传输后添加usleep（1）暂时解决
-
 void send_command(uint8_t command)
 {
     uint8_t txd[1] = {command};
@@ -681,7 +658,7 @@ void initialize(){
 }
 
 void test_signal(){
-    write_reg(0x02, 0xD0); // 内部测试信号
+    write_reg(0x02, 0xD0); // internel test signal
 
     write_reg(0x05, 0x65);
     write_reg(0x06, 0x65);
@@ -713,7 +690,7 @@ void change_sample_rate(int sample_rate)
             write_reg(0x01, 0x96);
             break;
         default:
-            write_reg(0x01, 0x92); //默认4K
+            write_reg(0x01, 0x92); // 4K
             break;
     }
 }
@@ -724,7 +701,7 @@ void change_mux(int mux)
     switch(mux)
     {
         case TEST_SIGNAL:
-            write_reg(0x02, 0xD0); // 内部测试信号
+            write_reg(0x02, 0xD0); 
             write_bits = 0x05;
             break;
         case INPUT_SHORTED:
@@ -734,7 +711,7 @@ void change_mux(int mux)
             write_reg(0x03, 0xEC);
             write_bits = 0x00;
             break;
-        default: // 默认是测试信号
+        default: 
             write_reg(0x02, 0xD0); 
             write_bits = 0x05;
             break;
@@ -787,7 +764,7 @@ void terminate(int sig)
     unmap_periph_mem(&gpio_regs);
     if (fifo_name)
         destroy_fifo(fifo_name, fifo_fd);
-    unmap_periph_mem(&vc_mem); //FIXME：此处会出现段错误,出现的原因是中断没有正常结束，VC_MEM还在不断被调用。注意此问题，不会出现段错误。
+    unmap_periph_mem(&vc_mem);
     // if (samp_total)
     //     printf("Total samples %u, overruns %u\n", samp_total, overrun_total);
     exit(0);
@@ -874,8 +851,7 @@ int create_fifo(char *fname)
 // Open a FIFO for writing, return 0 if there is no reader
 int open_fifo_write(char *fname)
 {
-    int f = open(fname, O_WRONLY); // 原来：O_WRONLY | O_NONBLOCK，这种方法会阻塞，阻塞直到有另一个程序读取他。或采用O_RDWR
-    // O_NONBLOCK 以不可阻断的方式打开文件, 也就是无论有无数据读取或等待, 都会立即返回进程之中.
+    int f = open(fname, O_WRONLY); 
 
     return(f == -1 ? 0 : f);
 }
@@ -885,14 +861,14 @@ int write_fifo(int fd, void *data, int dlen)
 {
     struct pollfd pollfd = {fd, POLLOUT, 0};
 
-    poll(&pollfd, 1, -1); // 第二个参数表示监视项目数，第三个参数表示超时时间,-1表示永远等待
+    poll(&pollfd, 1, -1);
 
     if (pollfd.revents&POLLOUT && !(pollfd.revents&POLLERR))
     {
         int write_num = write(fd, data, dlen);
         // printf("fd:%d, write_num:%d \n", fd, write_num);
         return (fd ? write_num : 0);
-        // return(fd ? write(fd, data, dlen) : 0); //如果成功，write（）返回写入的字节数
+        // return(fd ? write(fd, data, dlen) : 0); // If successful, write() returns the number of bytes written
     }
     return(0);
 }
@@ -900,7 +876,7 @@ int write_fifo(int fd, void *data, int dlen)
 // Return the free space in FIFO
 uint32_t fifo_freespace(int fd)
 {
-    return(fcntl(fd, F_GETPIPE_SZ)); // TODO: 查找一下资料，F_GETPIPE_SZ是不是用来调整FIFO大小的？
+    return(fcntl(fd, F_GETPIPE_SZ)); 
 }
 
 // Remove the FIFO
